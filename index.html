@@ -178,7 +178,7 @@ const audio = document.getElementById("bgm");
 
 const moods = ["🎧","😐","😬","😳","😭","💀","🌙"];
 
-noBtn.addEventListener("mouseenter", moveNo);
+noBtn.addEventListener("click", moveNo);
 noBtn.addEventListener("touchstart", moveNo);
 
 function moveNo(){
@@ -186,6 +186,10 @@ function moveNo(){
     attempts++;
 
     emoji.textContent = moods[Math.floor(Math.random()*moods.length)];
+
+    // ✅ NEW: shrinking NO button
+    const shrink = Math.max(0.3, 1 - attempts * 0.05);
+    noBtn.style.transform = `scale(${shrink})`;
 
     // unlock music on interaction (browser safe)
     if(!audioStarted){
@@ -198,6 +202,8 @@ function moveNo(){
     // =========================
     if(attempts < 10){
 
+       // ✅ EXPONENTIAL YES growth
+        const scale = Math.min(5, Math.pow(1.15, attempts));
         yesBtn.style.transform = `scale(${1 + attempts*0.05})`;
 
         const rect = noBtn.getBoundingClientRect();
@@ -219,6 +225,8 @@ function moveNo(){
     noBtn.style.left = Math.random()*maxX + "px";
     noBtn.style.top = Math.random()*maxY + "px";
 
+    // ✅ EXPONENTIAL (bigger cap)
+    const scale = Math.min(6, Math.pow(1.15, attempts));
     yesBtn.style.transform =
         `scale(${Math.min(1.8, 1 + attempts*0.07)})`;
 
