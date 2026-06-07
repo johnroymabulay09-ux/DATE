@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Date Proposal 😳</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(to bottom right, pink, lavender);
+      font-family: sans-serif;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 20px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .yes {
+      background: hotpink;
+      color: white;
+    }
+
+    .no {
+      background: gray;
+      color: white;
+      position: absolute;
+    }
+  </style>
+</head>
+<body>
+
+<div id="app">
+  <h1>Would you like to go on a date with me? 😳</h1>
+  <div id="emoji" style="font-size:60px; margin:15px;">😐</div>
+
+  <button class="yes" onclick="yesClick()">YES</button>
+  <button id="noBtn" class="no">NO</button>
+</div>
+
+<canvas id="confetti"></canvas>
+
+<script>
+  const noBtn = document.getElementById("noBtn");
+  const emoji = document.getElementById("emoji");
+
+  const moods = ["🥺", "😤"];
+  let yesScale = 1;
+
+  noBtn.addEventListener("mouseover", moveNo);
+
+  function moveNo() {
+    const maxX = window.innerWidth - noBtn.offsetWidth;
+    const maxY = window.innerHeight - noBtn.offsetHeight;
+
+    noBtn.style.left = Math.random() * maxX + "px";
+    noBtn.style.top = Math.random() * maxY + "px";
+
+    emoji.innerText = moods[Math.floor(Math.random() * moods.length)];
+
+    const yesBtn = document.querySelector(".yes");
+    yesScale = Math.min(yesScale + 0.05, 1.3);
+    yesBtn.style.transform = `scale(${yesScale})`;
+  }
+
+  function yesClick() {
+    document.body.innerHTML = `
+      <div style="text-align:center;">
+        <div style="font-size:70px;">🥰</div>
+        <h1>Yay! 🎉</h1>
+        <p>It’s a date 😌</p>
+
+        <div style="margin-top:20px; padding:20px; background:white; border-radius:20px;">
+          <p><b>Who:</b> Gojo Satoru 😎</p>
+          <p><b>When:</b> Saturday 6PM 🌅</p>
+          <p><b>Where:</b> Cozy Café ☕</p>
+        </div>
+      </div>
+    `;
+
+    launchConfetti();
+  }
+
+  function launchConfetti() {
+    const canvas = document.getElementById("confetti");
+    const ctx = canvas.getContext("2d");
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const pieces = Array.from({ length: 120 }).map(() => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height - canvas.height,
+      size: Math.random() * 6,
+      speed: Math.random() * 3 + 2,
+      color: `hsl(${Math.random() * 360},100%,70%)`
+    }));
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      pieces.forEach(p => {
+        p.y += p.speed;
+        if (p.y > canvas.height) p.y = -10;
+
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, p.size, p.size);
+      });
+
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  }
+</script>
+
+</body>
+</html>
