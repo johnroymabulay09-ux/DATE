@@ -3,68 +3,63 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Date Proposal</title>
+<title>Concert Date Invite</title>
 
 <style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Inter,sans-serif;
-}
-
 body{
-    min-height:100vh;
+    margin:0;
+    height:100vh;
     display:flex;
     justify-content:center;
     align-items:center;
-    background:linear-gradient(135deg,#fdfbfb,#ebedee);
+    background:linear-gradient(135deg,#0b1220,#111827);
+    font-family:sans-serif;
+    color:white;
     overflow:hidden;
-    position:relative;
 }
 
-/* Floating hearts */
-.heart{
+/* subtle floating glow particles (NOT cringe hearts) */
+.particle{
     position:absolute;
-    font-size:20px;
-    opacity:.15;
-    animation:floatUp linear infinite;
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:rgba(34,197,94,0.25);
+    animation:float 10s linear infinite;
 }
 
-@keyframes floatUp{
+@keyframes float{
     from{ transform:translateY(100vh); }
     to{ transform:translateY(-120vh); }
 }
 
 .card{
-    width:min(90%,500px);
-    background:rgba(255,255,255,.7);
-    backdrop-filter:blur(15px);
-    border:1px solid rgba(255,255,255,.4);
-    border-radius:30px;
+    width:min(90%,520px);
+    background:rgba(255,255,255,0.06);
+    backdrop-filter:blur(18px);
+    border-radius:25px;
     padding:40px;
     text-align:center;
-    box-shadow:0 20px 40px rgba(0,0,0,.08);
+    box-shadow:0 20px 60px rgba(0,0,0,0.5);
 }
 
 h1{
-    font-size:2rem;
-    color:#222;
+    font-size:20px;
     margin-bottom:10px;
 }
 
-.subtitle{
-    color:#666;
+.details{
+    font-size:13px;
+    opacity:.7;
     margin-bottom:25px;
 }
 
 #emoji{
-    font-size:70px;
+    font-size:55px;
     margin-bottom:20px;
     transition:.2s;
 }
 
-/* BUTTON LAYOUT FIX */
 .buttons{
     display:flex;
     justify-content:center;
@@ -74,49 +69,53 @@ h1{
 
 button{
     border:none;
-    cursor:pointer;
-    padding:14px 28px;
+    padding:12px 26px;
     border-radius:999px;
-    font-size:17px;
-    transition:.25s ease;
+    font-size:15px;
+    cursor:pointer;
 }
 
 .yes{
-    background:#111;
+    background:#22c55e;
     color:white;
-    box-shadow:0 10px 25px rgba(0,0,0,.15);
-}
-
-.yes:hover{
-    transform:translateY(-2px) scale(1.05);
 }
 
 .no{
     background:#e5e7eb;
-    color:#333;
-    position:relative; /* IMPORTANT FIX */
+    color:#111;
+    position:relative;
 }
 
-.success{
-    text-align:center;
+/* spotify mini bar */
+.player{
+    position:fixed;
+    bottom:15px;
+    left:50%;
+    transform:translateX(-50%);
+    width:min(92%,420px);
+    background:#0b1220;
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:15px;
+    padding:12px;
+    display:flex;
+    gap:12px;
+    align-items:center;
 }
 
-.big-heart{
-    font-size:90px;
-    animation:bounce 1s infinite alternate;
+.album{
+    width:38px;
+    height:38px;
+    border-radius:8px;
+    background:linear-gradient(135deg,#22c55e,#06b6d4);
 }
 
-@keyframes bounce{
-    from{ transform:translateY(0); }
-    to{ transform:translateY(-10px); }
+.track-title{
+    font-size:13px;
 }
 
-.success-card{
-    margin-top:20px;
-    background:white;
-    padding:20px;
-    border-radius:20px;
-    box-shadow:0 10px 30px rgba(0,0,0,.08);
+.artist{
+    font-size:11px;
+    opacity:.6;
 }
 
 canvas{
@@ -131,10 +130,18 @@ canvas{
 
 <div class="card">
 
-    <h1 id="question">Would you like to go on a date with me?</h1>
-    <p class="subtitle">Choose wisely.</p>
+    <h1>Concert Date Invite 🎶</h1>
 
-    <div id="emoji">🙂</div>
+    <div class="details">
+        Wave to Earth – The Pieces Tour<br>
+        Nov 15, 2026 • MOA Arena
+    </div>
+
+    <div id="emoji">🎧</div>
+
+    <p style="opacity:.8;font-size:14px;">
+        Do you want to go with me?
+    </p>
 
     <div class="buttons">
         <button class="yes" id="yesBtn" onclick="yesClick()">YES</button>
@@ -143,76 +150,121 @@ canvas{
 
 </div>
 
+<!-- spotify bar -->
+<div class="player">
+    <div class="album"></div>
+    <div>
+        <div class="track-title">Wave to Earth – Bad</div>
+        <div class="artist">now playing</div>
+    </div>
+</div>
+
+<!-- audio -->
+<audio id="bgm" loop>
+    <source src="bad.mp3" type="audio/mpeg">
+</audio>
+
 <canvas id="confetti"></canvas>
 
 <script>
-// floating hearts
-for(let i=0;i<18;i++){
-    const h=document.createElement("div");
-    h.className="heart";
-    h.innerHTML=Math.random()>0.5?"♡":"♥";
-    h.style.left=Math.random()*100+"vw";
-    h.style.animationDuration=(8+Math.random()*15)+"s";
-    h.style.fontSize=(15+Math.random()*25)+"px";
-    document.body.appendChild(h);
-}
 
-const noBtn=document.getElementById("noBtn");
-const yesBtn=document.getElementById("yesBtn");
-const emoji=document.getElementById("emoji");
-const question=document.getElementById("question");
+let attempts = 0;
+let audioStarted = false;
 
-let attempts=0;
-let yesScale=1;
+const noBtn = document.getElementById("noBtn");
+const yesBtn = document.getElementById("yesBtn");
+const emoji = document.getElementById("emoji");
+const audio = document.getElementById("bgm");
 
-const moods=["🙂","🥺","😟","😔","😭","😤","💔","😳"];
+const moods = ["🎧","😐","😬","😳","😭","💀","🌙"];
 
-noBtn.addEventListener("mouseenter",moveNo);
-noBtn.addEventListener("touchstart",moveNo);
+noBtn.addEventListener("mouseenter", moveNo);
+noBtn.addEventListener("touchstart", moveNo);
 
 function moveNo(){
 
     attempts++;
 
-    const maxX=window.innerWidth-noBtn.offsetWidth;
-    const maxY=window.innerHeight-noBtn.offsetHeight;
+    emoji.textContent = moods[Math.floor(Math.random()*moods.length)];
 
-    noBtn.style.position="fixed";
-    noBtn.style.left=Math.random()*maxX+"px";
-    noBtn.style.top=Math.random()*maxY+"px";
+    // unlock music on interaction (browser safe)
+    if(!audioStarted){
+        audio.play().catch(()=>{});
+        audioStarted = true;
+    }
 
-    emoji.textContent=moods[Math.floor(Math.random()*moods.length)];
+    // =========================
+    // FIRST PHASE (10 clicks)
+    // =========================
+    if(attempts < 10){
 
-    yesScale=Math.min(yesScale+0.08,1.7);
-    yesBtn.style.transform=`scale(${yesScale})`;
+        yesBtn.style.transform = `scale(${1 + attempts*0.05})`;
 
-    if(attempts===5) question.textContent="Are you sure?";
-    if(attempts===10) question.textContent="The NO button is nervous...";
-    if(attempts===15) question.textContent="Still trying? 😭";
-    if(attempts===20) noBtn.style.opacity=".5";
-    if(attempts===25) noBtn.innerText="MAYBE";
-    if(attempts===30) noBtn.remove();
+        const rect = noBtn.getBoundingClientRect();
+
+        noBtn.style.position = "fixed";
+        noBtn.style.left = rect.left + (Math.random()-0.5)*60 + "px";
+        noBtn.style.top = rect.top + (Math.random()-0.5)*60 + "px";
+
+        return;
+    }
+
+    // =========================
+    // ESCAPE MODE AFTER 10
+    // =========================
+    const maxX = window.innerWidth - noBtn.offsetWidth;
+    const maxY = window.innerHeight - noBtn.offsetHeight;
+
+    noBtn.style.position = "fixed";
+    noBtn.style.left = Math.random()*maxX + "px";
+    noBtn.style.top = Math.random()*maxY + "px";
+
+    yesBtn.style.transform =
+        `scale(${Math.min(1.8, 1 + attempts*0.07)})`;
+
+    if(attempts === 12)
+        document.querySelector("p").innerText = "this is literally a concert date.";
+
+    if(attempts === 18)
+        document.querySelector("p").innerText = "music is already playing…";
+
+    if(attempts === 25)
+        noBtn.innerText = "NO";
+
+    if(attempts === 30)
+        noBtn.remove();
+}
+
+// subtle particles
+for(let i=0;i<25;i++){
+    const p=document.createElement("div");
+    p.className="particle";
+    p.style.left=Math.random()*100+"vw";
+    p.style.animationDuration=(8+Math.random()*10)+"s";
+    document.body.appendChild(p);
 }
 
 function yesClick(){
-    document.body.innerHTML=`
-    <div class="card" style="text-align:center;">
-        <div class="big-heart">💖</div>
-        <h1>Date Confirmed</h1>
-        <p>Looking forward to it ✨</p>
 
-        <div class="success-card">
-            <p><b>Who:</b> You & Me</p>
-            <p><b>When:</b> Saturday 6PM</p>
-            <p><b>Where:</b> Somewhere nice ☕</p>
+    audio.play().catch(()=>{});
+
+    document.body.innerHTML=`
+    <div class="card">
+        <h1>see you at MOA Arena 🎶</h1>
+        <div class="details">
+            Wave to Earth – The Pieces Tour<br>
+            Nov 15, 2026
         </div>
+        <div style="font-size:50px;margin-top:20px;">✨🎧✨</div>
     </div>
     <canvas id="confetti"></canvas>
     `;
+
     launchConfetti();
 }
 
 function launchConfetti(){
+
     const canvas=document.getElementById("confetti");
     const ctx=canvas.getContext("2d");
 
@@ -221,14 +273,14 @@ function launchConfetti(){
 
     const pieces=[];
 
-    for(let i=0;i<180;i++){
+    for(let i=0;i<160;i++){
         pieces.push({
             x:canvas.width/2,
             y:canvas.height/2,
             dx:(Math.random()-0.5)*10,
             dy:(Math.random()-0.5)*10,
-            size:Math.random()*8+3,
-            color:`hsl(${Math.random()*360},100%,60%)`
+            size:Math.random()*6+2,
+            color:`hsl(${Math.random()*360},80%,60%)`
         });
     }
 
@@ -249,6 +301,7 @@ function launchConfetti(){
 
     animate();
 }
+
 </script>
 
 </body>
