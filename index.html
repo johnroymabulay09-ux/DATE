@@ -1,125 +1,254 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Date Proposal 😳</title>
-  <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(to bottom right, pink, lavender);
-      font-family: sans-serif;
-      overflow: hidden;
-      text-align: center;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Date Proposal</title>
 
-    button {
-      padding: 12px 24px;
-      border: none;
-      border-radius: 20px;
-      font-size: 18px;
-      cursor: pointer;
-    }
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Inter,sans-serif;
+}
 
-    .yes {
-      background: hotpink;
-      color: white;
-    }
+body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg,#fdfbfb,#ebedee);
+    overflow:hidden;
+    position:relative;
+}
 
-    .no {
-      background: gray;
-      color: white;
-      position: absolute;
-    }
-  </style>
+/* Floating hearts */
+.heart{
+    position:absolute;
+    font-size:20px;
+    opacity:.15;
+    animation:floatUp linear infinite;
+}
+
+@keyframes floatUp{
+    from{ transform:translateY(100vh); }
+    to{ transform:translateY(-120vh); }
+}
+
+.card{
+    width:min(90%,500px);
+    background:rgba(255,255,255,.7);
+    backdrop-filter:blur(15px);
+    border:1px solid rgba(255,255,255,.4);
+    border-radius:30px;
+    padding:40px;
+    text-align:center;
+    box-shadow:0 20px 40px rgba(0,0,0,.08);
+}
+
+h1{
+    font-size:2rem;
+    color:#222;
+    margin-bottom:10px;
+}
+
+.subtitle{
+    color:#666;
+    margin-bottom:25px;
+}
+
+#emoji{
+    font-size:70px;
+    margin-bottom:20px;
+    transition:.2s;
+}
+
+/* BUTTON LAYOUT FIX */
+.buttons{
+    display:flex;
+    justify-content:center;
+    gap:15px;
+    position:relative;
+}
+
+button{
+    border:none;
+    cursor:pointer;
+    padding:14px 28px;
+    border-radius:999px;
+    font-size:17px;
+    transition:.25s ease;
+}
+
+.yes{
+    background:#111;
+    color:white;
+    box-shadow:0 10px 25px rgba(0,0,0,.15);
+}
+
+.yes:hover{
+    transform:translateY(-2px) scale(1.05);
+}
+
+.no{
+    background:#e5e7eb;
+    color:#333;
+    position:relative; /* IMPORTANT FIX */
+}
+
+.success{
+    text-align:center;
+}
+
+.big-heart{
+    font-size:90px;
+    animation:bounce 1s infinite alternate;
+}
+
+@keyframes bounce{
+    from{ transform:translateY(0); }
+    to{ transform:translateY(-10px); }
+}
+
+.success-card{
+    margin-top:20px;
+    background:white;
+    padding:20px;
+    border-radius:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+}
+
+canvas{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+}
+</style>
 </head>
+
 <body>
 
-<div id="app">
-  <h1>Would you like to go on a date with me? 😳</h1>
-  <div id="emoji" style="font-size:60px; margin:15px;">😐</div>
+<div class="card">
 
-  <button class="yes" onclick="yesClick()">YES</button>
-  <button id="noBtn" class="no">NO</button>
+    <h1 id="question">Would you like to go on a date with me?</h1>
+    <p class="subtitle">Choose wisely.</p>
+
+    <div id="emoji">🙂</div>
+
+    <div class="buttons">
+        <button class="yes" id="yesBtn" onclick="yesClick()">YES</button>
+        <button class="no" id="noBtn">NO</button>
+    </div>
+
 </div>
 
 <canvas id="confetti"></canvas>
 
 <script>
-  const noBtn = document.getElementById("noBtn");
-  const emoji = document.getElementById("emoji");
+// floating hearts
+for(let i=0;i<18;i++){
+    const h=document.createElement("div");
+    h.className="heart";
+    h.innerHTML=Math.random()>0.5?"♡":"♥";
+    h.style.left=Math.random()*100+"vw";
+    h.style.animationDuration=(8+Math.random()*15)+"s";
+    h.style.fontSize=(15+Math.random()*25)+"px";
+    document.body.appendChild(h);
+}
 
-  const moods = ["🥺", "😤"];
-  let yesScale = 1;
+const noBtn=document.getElementById("noBtn");
+const yesBtn=document.getElementById("yesBtn");
+const emoji=document.getElementById("emoji");
+const question=document.getElementById("question");
 
-  noBtn.addEventListener("mouseover", moveNo);
+let attempts=0;
+let yesScale=1;
 
-  function moveNo() {
-    const maxX = window.innerWidth - noBtn.offsetWidth;
-    const maxY = window.innerHeight - noBtn.offsetHeight;
+const moods=["🙂","🥺","😟","😔","😭","😤","💔","😳"];
 
-    noBtn.style.left = Math.random() * maxX + "px";
-    noBtn.style.top = Math.random() * maxY + "px";
+noBtn.addEventListener("mouseenter",moveNo);
+noBtn.addEventListener("touchstart",moveNo);
 
-    emoji.innerText = moods[Math.floor(Math.random() * moods.length)];
+function moveNo(){
 
-    const yesBtn = document.querySelector(".yes");
-    yesScale = Math.min(yesScale + 0.05, 1.3);
-    yesBtn.style.transform = `scale(${yesScale})`;
-  }
+    attempts++;
 
-  function yesClick() {
-    document.body.innerHTML = `
-      <div style="text-align:center;">
-        <div style="font-size:70px;">🥰</div>
-        <h1>Yay! 🎉</h1>
-        <p>It’s a date 😌</p>
+    const maxX=window.innerWidth-noBtn.offsetWidth;
+    const maxY=window.innerHeight-noBtn.offsetHeight;
 
-        <div style="margin-top:20px; padding:20px; background:white; border-radius:20px;">
-          <p><b>Who:</b> Gojo Satoru 😎</p>
-          <p><b>When:</b> Saturday 6PM 🌅</p>
-          <p><b>Where:</b> Cozy Café ☕</p>
+    noBtn.style.position="fixed";
+    noBtn.style.left=Math.random()*maxX+"px";
+    noBtn.style.top=Math.random()*maxY+"px";
+
+    emoji.textContent=moods[Math.floor(Math.random()*moods.length)];
+
+    yesScale=Math.min(yesScale+0.08,1.7);
+    yesBtn.style.transform=`scale(${yesScale})`;
+
+    if(attempts===5) question.textContent="Are you sure?";
+    if(attempts===10) question.textContent="The NO button is nervous...";
+    if(attempts===15) question.textContent="Still trying? 😭";
+    if(attempts===20) noBtn.style.opacity=".5";
+    if(attempts===25) noBtn.innerText="MAYBE";
+    if(attempts===30) noBtn.remove();
+}
+
+function yesClick(){
+    document.body.innerHTML=`
+    <div class="card" style="text-align:center;">
+        <div class="big-heart">💖</div>
+        <h1>Date Confirmed</h1>
+        <p>Looking forward to it ✨</p>
+
+        <div class="success-card">
+            <p><b>Who:</b> You & Me</p>
+            <p><b>When:</b> Saturday 6PM</p>
+            <p><b>Where:</b> Somewhere nice ☕</p>
         </div>
-      </div>
+    </div>
+    <canvas id="confetti"></canvas>
     `;
-
     launchConfetti();
-  }
+}
 
-  function launchConfetti() {
-    const canvas = document.getElementById("confetti");
-    const ctx = canvas.getContext("2d");
+function launchConfetti(){
+    const canvas=document.getElementById("confetti");
+    const ctx=canvas.getContext("2d");
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.width=window.innerWidth;
+    canvas.height=window.innerHeight;
 
-    const pieces = Array.from({ length: 120 }).map(() => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height - canvas.height,
-      size: Math.random() * 6,
-      speed: Math.random() * 3 + 2,
-      color: `hsl(${Math.random() * 360},100%,70%)`
-    }));
+    const pieces=[];
 
-    function animate() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for(let i=0;i<180;i++){
+        pieces.push({
+            x:canvas.width/2,
+            y:canvas.height/2,
+            dx:(Math.random()-0.5)*10,
+            dy:(Math.random()-0.5)*10,
+            size:Math.random()*8+3,
+            color:`hsl(${Math.random()*360},100%,60%)`
+        });
+    }
 
-      pieces.forEach(p => {
-        p.y += p.speed;
-        if (p.y > canvas.height) p.y = -10;
+    function animate(){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
 
-        ctx.fillStyle = p.color;
-        ctx.fillRect(p.x, p.y, p.size, p.size);
-      });
+        pieces.forEach(p=>{
+            p.x+=p.dx;
+            p.y+=p.dy;
+            p.dy+=0.05;
 
-      requestAnimationFrame(animate);
+            ctx.fillStyle=p.color;
+            ctx.fillRect(p.x,p.y,p.size,p.size);
+        });
+
+        requestAnimationFrame(animate);
     }
 
     animate();
-  }
+}
 </script>
 
 </body>
