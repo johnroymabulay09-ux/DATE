@@ -170,7 +170,8 @@ canvas{
 
 let attempts = 0;
 let audioStarted = false;
-
+let lastMove = 0;
+    
 const noBtn = document.getElementById("noBtn");
 const yesBtn = document.getElementById("yesBtn");
 const emoji = document.getElementById("emoji");
@@ -183,6 +184,11 @@ noBtn.addEventListener("touchstart", moveNo);
 
 function moveNo(){
 
+    const now = Date.now();
+
+    if(now - lastMove < 200) return; // ✅ limiter
+    lastMove = now;
+    
     attempts++;
 
     emoji.textContent = moods[Math.floor(Math.random()*moods.length)];
